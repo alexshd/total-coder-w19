@@ -1,0 +1,57 @@
+# https://taskfile.dev
+
+version: "3"
+
+interval: 500ms
+
+tasks:
+  default:
+    deps:
+      - test
+
+  test:
+    cmds:
+      - gotest -cover -race ./...
+
+  build:
+    cmds:
+      - task: tidy
+      - go build -o ./bin/w17 .
+
+  tidy:
+    cmds:
+      - go mod tidy
+
+  templ:
+    desc: Generate the templates
+    watch: true
+    sources:
+      - "**/*.templ"
+    cmds:
+      - templ generate
+
+  run:
+    desc: Watch and rebuild
+    watch: true
+    sources:
+      - "**/*.go"
+
+    generates:
+      - ./bin/w17
+    deps:
+      - build
+    cmds:
+      - bin/w17
+    silent: false
+
+  commit:
+    cmds:
+      - git add .
+      - git commit
+
+  push:
+    cmds:
+      - task: commit
+      - task: build
+      - task: test
+      - git push

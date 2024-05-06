@@ -19,3 +19,9 @@
 
 # Go workspace file
 go.work
+
+# SHD
+bin/
+tmp/
+.task/
+
