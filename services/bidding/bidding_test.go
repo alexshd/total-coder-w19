@@ -15,11 +15,10 @@ func TestBiddingService(t *testing.T) {
 	Convey("Scenario - Bidding Sever receives HTTP request", t, func() {
 		Convey("Given request handler", func() {
 			Convey("Then service receives request", func() {
-				w := httptest.NewRecorder()
-
 				Convey("When request contains AdPlacmentID", func() {
-					query := url.Values{"ad_placement_id": {"1234-1234-1234"}}
-					req := httptest.NewRequest(http.MethodGet, "/bid"+query.Encode(), nil)
+					w := httptest.NewRecorder()
+					query := url.Values{"ad_placement_id": {"1234-1234-1234-1234"}}
+					req := httptest.NewRequest(http.MethodGet, "/bid?"+query.Encode(), nil)
 
 					BidService(w, req)
 					Convey("Then service should respond with JSON, AdOpbject", func() {
@@ -29,7 +28,7 @@ func TestBiddingService(t *testing.T) {
 
 						err := json.NewDecoder(w.Body).Decode(&adObject)
 						So(err, ShouldBeNil)
-						// So(adObject, ShouldEqualJSON, "")
+
 						Convey("Then AdObject should contain AdID", func() {
 							So(adObject.AdID, ShouldNotBeEmpty)
 							So(adObject.AdID, ShouldHaveSameTypeAs, "string")
@@ -43,17 +42,23 @@ func TestBiddingService(t *testing.T) {
 						})
 
 						Convey("And StatusOK (200)", func() {
-							So(resp.StatusCode, ShouldEqual, http.StatusOK)
+							So(w.Result().StatusCode, ShouldEqual, http.StatusOK)
 						})
 					})
-
-					Convey("When service not interested in the spot", func() {
-						Convey("Then return StatusNoContent (204)", nil)
-					})
+					Reset(func() { w.Result().Body.Close() })
 				})
+				Convey("When service not interested in the spot", func() {
+					w := httptest.NewRecorder()
 
-				Convey("But the request doe's not contains AdPlacementID", func() {
-					Convey("Then Status Forbidden", nil)
+					query := url.Values{"ad_placement_id": {"1234-1234"}}
+					req := httptest.NewRequest(http.MethodGet, "/bid?"+query.Encode(), nil)
+
+					BidService(w, req)
+
+					Convey("Then return StatusNoContent (204)", func() {
+						So(w.Result().StatusCode, ShouldEqual, http.StatusNoContent)
+					})
+					Reset(func() { w.Result().Body.Close() })
 				})
 			})
 		})
