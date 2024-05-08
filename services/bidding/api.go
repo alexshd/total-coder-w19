@@ -16,6 +16,7 @@ func BidService(w http.ResponseWriter, r *http.Request) {
 	adPlacementID := r.URL.Query().Get("ad_placement_id")
 	w.Header().Set("Content-Type", "application/json")
 
+	// For 2 cases `if` enough ... It should be more then 2 cases ...
 	switch {
 	case VerifyMock(adPlacementID) > 10: // All Good
 		slog.Info("GOOD", "verify", VerifyMock(adPlacementID))
