@@ -14,7 +14,7 @@ type AdObject struct {
 func BidService(w http.ResponseWriter, r *http.Request) {
 	adObject := &AdObject{
 		AdID:     "AD-ID",
-		BidPrice: rand.IntN(1500) + 200,
+		BidPrice: rand.IntN(1300) + 200,
 	}
 
 	w.Header().Set("content-type", "application/json")

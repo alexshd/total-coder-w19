@@ -29,13 +29,22 @@ func TestBiddingService(t *testing.T) {
 
 						err := json.NewDecoder(w.Body).Decode(&adObject)
 						So(err, ShouldBeNil)
-
-						Convey("Then AdObject should contain AdID", nil)
+						// So(adObject, ShouldEqualJSON, "")
+						Convey("Then AdObject should contain AdID", func() {
+							So(adObject.AdID, ShouldNotBeEmpty)
+							So(adObject.AdID, ShouldHaveSameTypeAs, "string")
+						})
 						Convey("And  AdObject should contain BidPrice ( random for now )", func() {
-							Convey("Then BidPrice should be in cents ( avoid floats for currency !!! )", nil)
+							So(adObject.BidPrice, ShouldNotBeEmpty)
+							Convey("Then BidPrice should be in cents ( avoid floats for currency !!! )", func() {
+								So(adObject.BidPrice, ShouldHaveSameTypeAs, 111)
+								So(adObject.BidPrice, ShouldBeBetween, 200, 1500)
+							})
 						})
 
-						Convey("And StatusOK (200)", nil)
+						Convey("And StatusOK (200)", func() {
+							So(resp.StatusCode, ShouldEqual, http.StatusOK)
+						})
 					})
 
 					Convey("When service not interested in the spot", func() {
