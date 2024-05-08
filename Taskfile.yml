@@ -16,7 +16,7 @@ tasks:
   build:
     cmds:
       - task: tidy
-      - go build -o ./bin/w17 .
+      - go build -o ./bin/w19 .
 
   tidy:
     cmds:
@@ -37,11 +37,11 @@ tasks:
       - "**/*.go"
 
     generates:
-      - ./bin/w17
+      - ./bin/w19
     deps:
       - build
     cmds:
-      - bin/w17
+      - bin/w19
     silent: false
 
   commit:
