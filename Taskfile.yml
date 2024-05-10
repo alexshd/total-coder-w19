@@ -4,14 +4,25 @@ version: "3"
 
 interval: 500ms
 
+includes:
+  serivces:
+    taskfile: ./services/Taskfile.yaml
+    optional: true
+    dir: ./services
+    aliases:
+      - s
+
 tasks:
   default:
     deps:
       - test
 
   test:
+    sources:
+      - "**/*_test.go"
+
     cmds:
-      - gotest -cover -race ./...
+      - go test -cover -race ./... -json | tparse
 
   build:
     cmds:
@@ -21,14 +32,6 @@ tasks:
   tidy:
     cmds:
       - go mod tidy
-
-  templ:
-    desc: Generate the templates
-    watch: true
-    sources:
-      - "**/*.templ"
-    cmds:
-      - templ generate
 
   run:
     desc: Watch and rebuild
@@ -55,3 +58,7 @@ tasks:
       - task: build
       - task: test
       - git push
+
+  try:
+    cmds:
+      - test -f main.go || notify-send "try failed"

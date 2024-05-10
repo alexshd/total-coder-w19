@@ -1,0 +1,10 @@
+version: "3"
+
+tasks:
+  test:
+    cmds:
+      - gotest -v -cover ./...
+
+  default:
+    deps:
+      - test
