@@ -2,8 +2,9 @@ package auction
 
 import (
 	"encoding/json"
-	"log/slog"
+	"fmt"
 	"net/http"
+	"time"
 )
 
 type AuctionResponce struct {
@@ -11,8 +12,7 @@ type AuctionResponce struct {
 }
 
 func AuctionHandler(w http.ResponseWriter, r *http.Request) {
-	adPlacementID := r.URL.Query().Get("ad_placement_id")
-	slog.Info("recievd", "adPlacementID", adPlacementID)
+	// adPlacementID := r.URL.Query().Get("ad_placement_id")
 	w.Header().Set("Content-Type", "application/json")
 
 	auctionRes := &AuctionResponce{
@@ -21,4 +21,32 @@ func AuctionHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(auctionRes); err != nil {
 		http.Error(w, "UPSI", http.StatusInternalServerError)
 	}
+}
+
+var tenSecondTimeout = 10 * time.Second
+
+// Racer compares the response times of a and b, returning the fastest one, timing out after 10s.
+func Racer(a, b string) (winner string, error error) {
+	return ConfigurableRacer(a, b, tenSecondTimeout)
+}
+
+// ConfigurableRacer compares the response times of a and b, returning the fastest one.
+func ConfigurableRacer(a, b string, timeout time.Duration) (winner string, error error) {
+	select {
+	case <-ping(a):
+		return a, nil
+	case <-ping(b):
+		return b, nil
+	case <-time.After(timeout):
+		return "", fmt.Errorf("timed out waiting for %s and %s", a, b)
+	}
+}
+
+func ping(url string) chan struct{} {
+	ch := make(chan struct{})
+	go func() {
+		_, _ = http.Get(url)
+		close(ch)
+	}()
+	return ch
 }

@@ -2,7 +2,6 @@ package bidding
 
 import (
 	"encoding/json"
-	"log/slog"
 	"math/rand/v2"
 	"net/http"
 )
@@ -19,7 +18,6 @@ func BidService(w http.ResponseWriter, r *http.Request) {
 	// For 2 cases `if` enough ... It should be more then 2 cases ...
 	switch {
 	case VerifyMock(adPlacementID) > 10: // All Good
-		slog.Info("GOOD", "verify", VerifyMock(adPlacementID))
 		adObject := &AdObject{
 			AdID:     "AD-ID",
 			BidPrice: rand.IntN(1300) + 200,
@@ -30,8 +28,6 @@ func BidService(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	case VerifyMock(adPlacementID) < 10: // Regect
-		slog.Info("REJECT", "verify", VerifyMock(adPlacementID))
-
 		w.WriteHeader(http.StatusNoContent)
 	}
 }

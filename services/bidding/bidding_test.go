@@ -75,13 +75,19 @@ type BiddingHandlerSuite struct {
 }
 
 func (b *BiddingHandlerSuite) SetupSuite() {
+	b.T().Log("setup suite")
 	b.w = httptest.NewRecorder()
 	b.adObject = new(AdObject)
 	b.query = url.Values{"ad_placement_id": {"1234-1234"}}
 	b.req = httptest.NewRequest(http.MethodGet, "/bid?"+b.query.Encode(), nil)
 }
 
-func (b *BiddingHandlerSuite) SetupSubTest() {
+func (b *BiddingHandlerSuite) SetupTest() {
+	b.T().Log("test Setup")
+}
+
+func (b *BiddingHandlerSuite) TearDownTest() {
+	b.T().Log("last")
 }
 
 func (b *BiddingHandlerSuite) TestBiddingHandler() {

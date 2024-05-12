@@ -6,9 +6,30 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/suite"
 )
+
+type MultiBiddingRequestSuite struct {
+	suite.Suite
+	bidSerivces chan any
+}
+
+func (s *MultiBiddingRequestSuite) SetupSuite() {
+	s.bidSerivces = make(chan any)
+}
+
+func (s *MultiBiddingRequestSuite) SetupSubTest() {
+}
+
+func (s *MultiBiddingRequestSuite) TestDataReceived() {
+	s.Run("TheTest", func() {
+		s.Run("SubTest", func() {
+		})
+	})
+}
 
 func TestAuctionService(t *testing.T) {
 	Convey("Given multiple bidding services", t, func() {
@@ -36,8 +57,8 @@ func TestAuctionService(t *testing.T) {
 	})
 }
 
-func TestAuctionServiceClientExposedAPI(t *testing.T) {
-	Convey("Given publicly exposed API", t, func() {
+func (s *MultiBiddingRequestSuite) TestAuctionServiceClientExposedAPI() {
+	Convey("Given publicly exposed API", s.T(), func() {
 		w := httptest.NewRecorder()
 		Convey("Featureing client facing API for single request", func() {
 			query := url.Values{"ad_placement_id": {"PBID-1234-1234-1234-1234"}}
@@ -75,4 +96,50 @@ func TestAuctionServiceClientExposedAPI(t *testing.T) {
 			})
 		})
 	})
+}
+
+func TestMultiBidding(t *testing.T) {
+	suite.Run(t, new(MultiBiddingRequestSuite))
+}
+
+func TestRacer(t *testing.T) {
+	t.Run("compares speeds of servers, returning the url of the fastest one", func(t *testing.T) {
+		slowServer := makeDelayedServer(20 * time.Millisecond)
+		fastServer := makeDelayedServer(0 * time.Millisecond)
+
+		defer slowServer.Close()
+		defer fastServer.Close()
+
+		slowURL := slowServer.URL
+		fastURL := fastServer.URL
+
+		want := fastURL
+		got, err := Racer(slowURL, fastURL)
+		if err != nil {
+			t.Fatalf("did not expect an error but got one %v", err)
+		}
+
+		if got != want {
+			t.Errorf("got %q, want %q", got, want)
+		}
+	})
+
+	t.Run("returns an error if a server doesn't respond within 10s", func(t *testing.T) {
+		server := makeDelayedServer(25 * time.Millisecond)
+
+		defer server.Close()
+
+		_, err := ConfigurableRacer(server.URL, server.URL, 20*time.Millisecond)
+
+		if err == nil {
+			t.Error("expected an error but didn't get one")
+		}
+	})
+}
+
+func makeDelayedServer(delay time.Duration) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(delay)
+		w.WriteHeader(http.StatusOK)
+	}))
 }
