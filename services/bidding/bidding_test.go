@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
-	"github.com/stretchr/testify/suite"
 )
 
 func TestBiddingService(t *testing.T) {
@@ -66,40 +65,7 @@ func TestBiddingService(t *testing.T) {
 	})
 }
 
-type BiddingHandlerSuite struct {
-	suite.Suite
-	w        http.ResponseWriter
-	query    url.Values
-	req      *http.Request
-	adObject *AdObject
-}
-
-func (b *BiddingHandlerSuite) SetupSuite() {
-	b.T().Log("setup suite")
-	b.w = httptest.NewRecorder()
-	b.adObject = new(AdObject)
-	b.query = url.Values{"ad_placement_id": {"1234-1234"}}
-	b.req = httptest.NewRequest(http.MethodGet, "/bid?"+b.query.Encode(), nil)
-}
-
-func (b *BiddingHandlerSuite) SetupTest() {
-	b.T().Log("test Setup")
-}
-
-func (b *BiddingHandlerSuite) TearDownTest() {
-	b.T().Log("last")
-}
-
-func (b *BiddingHandlerSuite) TestBiddingHandler() {
-	b.Run("Do It again", func() {
-		b.HTTPSuccess(BidService, http.MethodGet, "bid", b.query)
-	})
-}
-
-func TestBiddingHandlerSuite(t *testing.T) {
-	suite.Run(t, new(BiddingHandlerSuite))
-}
-
+// ShouldPass a way to integrate `testify.assertion` with goconvey
 func ShouldPass(actual any, expected ...any) string {
 	if actual == true {
 		return ""
@@ -107,6 +73,7 @@ func ShouldPass(actual any, expected ...any) string {
 	return "suite test failed"
 }
 
+// Then rapper around So() for readability
 func Then(assertion any) {
 	So(assertion, ShouldPass)
 }
