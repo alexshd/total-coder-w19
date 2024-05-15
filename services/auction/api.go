@@ -2,51 +2,59 @@ package auction
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"time"
+	"sync"
 )
+
+type APIResponce struct {
+	AdPlacementID string `json:"ad_placement_id"`
+	AdLink        string `json:"ad_link"`
+	Price         int    `json:"price"`
+}
+
+func AuctionClientAPI(w http.ResponseWriter, r *http.Request) {
+	responce := &APIResponce{
+		AdPlacementID: r.URL.Query().Get("ad_placement_id"),
+		Price:         1234,
+		AdLink:        "http://some.link.to.the.ad",
+	}
+
+	w.Header().Set("content-type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(responce); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
 
 type AuctionResponce struct {
 	Status string `json:"status"`
 }
 
 func AuctionHandler(w http.ResponseWriter, r *http.Request) {
-	// adPlacementID := r.URL.Query().Get("ad_placement_id")
+	adPlacementID := r.URL.Query().Get("ad_placement_id")
 	w.Header().Set("Content-Type", "application/json")
 
 	auctionRes := &AuctionResponce{
-		Status: "cool",
+		Status: adPlacementID,
 	}
 	if err := json.NewEncoder(w).Encode(auctionRes); err != nil {
 		http.Error(w, "UPSI", http.StatusInternalServerError)
 	}
 }
 
-var tenSecondTimeout = 10 * time.Second
-
-// Racer compares the response times of a and b, returning the fastest one, timing out after 10s.
-func Racer(a, b string) (winner string, error error) {
-	return ConfigurableRacer(a, b, tenSecondTimeout)
+type Acum struct {
+	list []string
+	sync.RWMutex
 }
 
-// ConfigurableRacer compares the response times of a and b, returning the fastest one.
-func ConfigurableRacer(a, b string, timeout time.Duration) (winner string, error error) {
-	select {
-	case <-ping(a):
-		return a, nil
-	case <-ping(b):
-		return b, nil
-	case <-time.After(timeout):
-		return "", fmt.Errorf("timed out waiting for %s and %s", a, b)
+func max[K interface{ ~int | ~string }](list []K) K {
+	var max K
+
+	for _, c := range list {
+		if c > max {
+			max = c
+		}
 	}
-}
 
-func ping(url string) chan struct{} {
-	ch := make(chan struct{})
-	go func() {
-		_, _ = http.Get(url)
-		close(ch)
-	}()
-	return ch
+	return max
 }

@@ -1,6 +1,6 @@
 module github.com/alexshd/total-coder-w19
 
-go 1.22.2
+go 1.22.3
 
 require github.com/smartystreets/goconvey v1.8.1
 
@@ -14,6 +14,7 @@ require (
 )
 
 require (
+	github.com/ardanlabs/conf/v3 v3.1.7
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/lipgloss v0.10.0 // indirect
 	github.com/charmbracelet/log v0.4.0

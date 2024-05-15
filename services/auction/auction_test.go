@@ -6,7 +6,9 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
+	. "github.com/alexshd/total-coder-w19/internal"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 )
@@ -38,7 +40,6 @@ func TestAuctionDSPHappyPath(t *testing.T) {
 				Convey("And it should be in a struct", func() {
 					r := &APIResponce{}
 					Then(assert.NoError(t, json.NewDecoder(w.Body).Decode(r)))
-
 					Convey("And the struct should have", func() {
 						So(r.AdLink, ShouldNotBeEmpty)
 						So(r.Price, ShouldBeBetween, 10, 3000)
@@ -50,57 +51,11 @@ func TestAuctionDSPHappyPath(t *testing.T) {
 	})
 }
 
-type APIResponce struct {
-	AdPlacementID string `json:"ad_placement_id"`
-	AdLink        string `json:"ad_link"`
-	Price         int    `json:"price"`
-}
-
-func AuctionClientAPI(w http.ResponseWriter, r *http.Request) {
-	responce := &APIResponce{
-		AdPlacementID: r.URL.Query().Get("ad_placement_id"),
-		Price:         1234,
-		AdLink:        "http://some.link.to.the.ad",
-	}
-
-	w.Header().Set("content-type", "application/json")
-
-	if err := json.NewEncoder(w).Encode(responce); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func TestAuctionService(t *testing.T) {
-	Convey("Given multiple bidding services", t, func() {
-		Convey("The Auction service sends concurrent requests", func() {
-			Convey("When the response StatusCodeOK (200)", func() {
-				Convey("Then accumulate valid bids", func() {
-					So(1, ShouldEqual, 1)
-				})
-			})
-
-			Convey("When response StatusCode != 200", func() {
-				Convey("Or Bidding Service response time over 200ms", func() {
-					Convey("Then Auction should  not accept the bid from that Bidding Service", func() {
-						So(1, ShouldEqual, 1)
-					})
-				})
-			})
-
-			Convey("When FanOut finished", func() {
-				Convey("Then return the Max BidPrice", func() {
-					So(1, ShouldEqual, 1)
-				})
-			})
-		})
-	})
-}
-
 func TestAuctionServiceClientExposedAPI(t *testing.T) {
 	Convey("Given publicly exposed API", t, func() {
 		w := httptest.NewRecorder()
 		Convey("Featureing client facing API for single request", func() {
-			query := url.Values{"ad_placement_id": {"PBID-1234-1234-1234-1234"}}
+			query := url.Values{"ad_placement_id": {"THE-COOLEST-ID-ETHER"}}
 			req := httptest.NewRequest(http.MethodGet, "/bid?"+query.Encode(), nil)
 			AuctionHandler(w, req)
 
@@ -111,7 +66,7 @@ func TestAuctionServiceClientExposedAPI(t *testing.T) {
 				So(json.NewDecoder(w.Body).Decode(&decod), ShouldBeNil)
 				Convey("Then the responce is JSON", func() {
 					So(res.Header.Get("content-type"), ShouldEqual, "application/json")
-					So(decod.Status, ShouldEqual, "cool")
+					So(decod.Status, ShouldEqual, "THE-COOLEST-ID-ETHER")
 				})
 			})
 		})
@@ -120,15 +75,30 @@ func TestAuctionServiceClientExposedAPI(t *testing.T) {
 		Convey("On external client request", func() {
 			Convey("When contains AdPlacementID", func() {
 				Convey("Then \"FanOut\" ( optimize ) client request", func() {
-					Convey("When no eligible bids are received", func() {
-						Convey("Then return StatusCodeNoContent ( 204 ) to the client", func() {
-							So(1, ShouldEqual, 1)
-						})
-					})
-
 					Convey("When On Success", func() {
-						Convey("Then return Max BidPrice", func() {
-							So(1, ShouldEqual, 1)
+						expected := "THE-COOLEST-ID-ETHER"
+						output := make(chan string, 4)
+						list := Acum{}
+						Convey("When running the function", func() {
+							a := assert.New(t)
+							for _, s := range []string{"1", "2", "3", "4", "5"} {
+								input := httptest.NewRequest(http.MethodGet, "/bid?ad_placement_id=THE-COOLEST-ID-ETHER-"+s, nil)
+								ProcessNumber(input, output)
+							}
+							for range 5 {
+								select {
+								case result := <-output:
+									So(result, ShouldContainSubstring, expected)
+									list.Lock()
+									list.list = append(list.list, result)
+									list.Unlock()
+								case <-time.After(1 * time.Second):
+									a.Fail("Test timed out")
+								}
+							}
+							Convey("The max bid is", func() {
+								So(max(list.list), ShouldContainSubstring, "THE-COOLEST-ID-ETHER-5")
+							})
 						})
 					})
 				})
@@ -137,15 +107,10 @@ func TestAuctionServiceClientExposedAPI(t *testing.T) {
 	})
 }
 
-// ShouldPass a way to integrate `testify.assertion` with goconvey
-func ShouldPass(actual any, expected ...any) string {
-	if actual == true {
-		return ""
-	}
-	return "suite test failed"
-}
-
-// Then rapper around So() for readability
-func Then(assertion any) {
-	So(assertion, ShouldPass)
+func ProcessNumber(r *http.Request, output chan<- string) {
+	go func() {
+		w := httptest.NewRecorder()
+		AuctionHandler(w, r)
+		output <- w.Body.String()
+	}()
 }
