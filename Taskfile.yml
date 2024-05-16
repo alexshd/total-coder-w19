@@ -19,7 +19,7 @@ tasks:
 
   test:
     sources:
-      - "**/*_test.go"
+      - "**/*.go"
 
     cmds:
       - go test -cover -race ./... -json | tparse
