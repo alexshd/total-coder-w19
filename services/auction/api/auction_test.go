@@ -76,7 +76,7 @@ func TestAuctionServiceClientExposedAPI(t *testing.T) {
 			Convey("When contains AdPlacementID", func() {
 				Convey("Then \"FanOut\" ( optimize ) client request", func() {
 					Convey("When On Success", func() {
-						//                               a :=assert.New(t)
+						// a :=assert.New(t)
 						// output := make(chan any, 4)
 						// list := Acum{}
 						Convey("When running the function", func() {
@@ -120,6 +120,7 @@ func MakeBiddRequest(bidURI string, output chan<- any) {
 		if err != nil {
 			return
 		}
+
 		_ = json.NewDecoder(resp.Body).Decode(&data)
 		output <- data
 	}()

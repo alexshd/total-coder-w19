@@ -19,12 +19,14 @@ func TestSomeTest(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Hello, client")
 	}))
+
 	defer ts.Close()
 
 	res, err := http.Get(ts.URL)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	greeting, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
@@ -32,7 +34,6 @@ func TestSomeTest(t *testing.T) {
 	}
 
 	a.Equal("Hello, client\n", string(greeting))
-	fmt.Printf("%s", greeting)
 }
 
 func TestGETPlayers(t *testing.T) {
