@@ -22,9 +22,7 @@ func AuctionClientAPI(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("content-type", "application/json")
 
-	if err := json.NewEncoder(w).Encode(responce); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	_ = json.NewEncoder(w).Encode(responce)
 }
 
 type AuctionResponce struct {
@@ -38,9 +36,8 @@ func AuctionHandler(w http.ResponseWriter, r *http.Request) {
 	auctionRes := &AuctionResponce{
 		Status: adPlacementID,
 	}
-	if err := json.NewEncoder(w).Encode(auctionRes); err != nil {
-		http.Error(w, "UPSI", http.StatusInternalServerError)
-	}
+
+	_ = json.NewEncoder(w).Encode(auctionRes)
 }
 
 type Acum struct {

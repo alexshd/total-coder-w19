@@ -33,8 +33,10 @@ func ConfSHD() error {
 			fmt.Println(help)
 			return nil
 		}
+
 		return fmt.Errorf("parsing config: %w", err)
 
 	}
+
 	return nil
 }

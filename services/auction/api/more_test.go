@@ -9,7 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/alexshd/total-coder-w19/logger"
+	"github.com/alexshd/total-coder-w19/internal/logger"
 	"github.com/stretchr/testify/assert"
 )
 

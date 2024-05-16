@@ -57,7 +57,3 @@ tasks:
       - task: commit
       - task: test
       - git push
-
-  try:
-    cmds:
-      - test -f main.go || notify-send "try failed"

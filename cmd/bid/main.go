@@ -7,17 +7,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/alexshd/total-coder-w19/logger"
+	"github.com/alexshd/total-coder-w19/internal/logger"
 )
 
 func main() {
-	// pooling()
-	boundedWorkPooling()
+	// Pooling()
+	BoundedWorkPooling()
 }
 
-// pooling: In this pattern, the parent goroutine signals 100 pieces of work
+// Pooling: In this pattern, the parent goroutine signals 100 pieces of work
 // to a pool of child goroutines waiting for work to perform.
-func pooling() {
+func Pooling() {
 	slog := slog.New(logger.NewLogHandler("POOLING"))
 	ch := make(chan string)
 
@@ -44,12 +44,12 @@ func pooling() {
 	fmt.Println("-------------------------------------------------")
 }
 
-// boundedWorkPooling: In this pattern, a pool of child goroutines is created
+// BoundedWorkPooling: In this pattern, a pool of child goroutines is created
 // to service a fixed amount of work. The parent goroutine iterates over all
 // work, signaling that into the pool. Once all the work has been signaled,
 // then the channel is closed, the channel is flushed, and the child
 // goroutines terminate.
-func boundedWorkPooling() {
+func BoundedWorkPooling() {
 	slog := slog.New(logger.NewLogHandler("POOLING"))
 	work := []string{"paper1", "paper2", "paper3", "paper4"}
 	slog.Info("work length", "len", len(work))

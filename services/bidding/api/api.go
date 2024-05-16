@@ -15,7 +15,7 @@ func BidService(w http.ResponseWriter, r *http.Request) {
 	adPlacementID := r.URL.Query().Get("ad_placement_id")
 	w.Header().Set("Content-Type", "application/json")
 
-	// For 2 cases `if` enough ... It should be more then 2 cases ...
+	// For 2 cases `if` enough ... It should be more than 2 cases ...
 	switch {
 	case VerifyMock(adPlacementID) > 10: // All Good
 		adObject := &AdObject{
@@ -27,7 +27,7 @@ func BidService(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewEncoder(w).Encode(adObject); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-	case VerifyMock(adPlacementID) < 10: // Regect
+	case VerifyMock(adPlacementID) < 10: // Reject
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
