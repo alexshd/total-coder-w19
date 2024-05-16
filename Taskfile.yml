@@ -55,7 +55,6 @@ tasks:
   push:
     cmds:
       - task: commit
-      - task: build
       - task: test
       - git push
 

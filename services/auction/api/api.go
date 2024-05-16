@@ -1,7 +1,8 @@
-package auction
+package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 )
@@ -43,18 +44,10 @@ func AuctionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type Acum struct {
-	list []string
+	list []any
 	sync.RWMutex
 }
 
-func max[K interface{ ~int | ~string }](list []K) K {
-	var max K
-
-	for _, c := range list {
-		if c > max {
-			max = c
-		}
-	}
-
-	return max
+func PlayerServer(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "20")
 }
