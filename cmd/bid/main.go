@@ -11,14 +11,14 @@ import (
 )
 
 func main() {
-	// Pooling()
+	Pooling()
 	BoundedWorkPooling()
 }
 
 // Pooling: In this pattern, the parent goroutine signals 100 pieces of work
 // to a pool of child goroutines waiting for work to perform.
 func Pooling() {
-	slog := slog.New(logger.NewLogHandler("POOLING"))
+	slog := slog.New(logger.NewLogHandler("POOLING-A"))
 	ch := make(chan string)
 
 	g := runtime.GOMAXPROCS(0)
@@ -27,7 +27,7 @@ func Pooling() {
 			for d := range ch {
 				slog.Info("goroutine", "child", child, "recv'd signal", d)
 			}
-			slog.Info("shotdown singnal recived", "child", child)
+			slog.Info("shutdown signal received", "child", child)
 		}(c)
 	}
 
@@ -50,11 +50,14 @@ func Pooling() {
 // then the channel is closed, the channel is flushed, and the child
 // goroutines terminate.
 func BoundedWorkPooling() {
-	slog := slog.New(logger.NewLogHandler("POOLING"))
-	work := []string{"paper1", "paper2", "paper3", "paper4"}
-	slog.Info("work length", "len", len(work))
-	g := runtime.GOMAXPROCS(0)
-	var wg sync.WaitGroup
+	var (
+		slog = slog.New(logger.NewLogHandler("POOLING-B"))
+
+		work = []string{"paper1", "paper2", "paper3", "paper4"}
+		g    = runtime.GOMAXPROCS(0)
+		wg   sync.WaitGroup
+	)
+
 	wg.Add(g)
 
 	ch := make(chan string, g)
@@ -62,15 +65,15 @@ func BoundedWorkPooling() {
 	for c := range g {
 		go func(child int) {
 			defer wg.Done()
-			for wrk := range ch {
-				fmt.Printf("child %d : recv'd signal : %s\n", child, wrk)
+			for wr := range ch {
+				slog.Info("work +", "child", child, "recv'd signal", wr)
 			}
-			fmt.Printf("child %d : recv'd shutdown signal\n", child)
+			slog.Info("work -", "child", child)
 		}(c)
 	}
 
-	for _, wrk := range work {
-		ch <- wrk
+	for _, wr := range work {
+		ch <- wr
 	}
 	close(ch)
 	wg.Wait()

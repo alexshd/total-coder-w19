@@ -24,9 +24,8 @@ func BidService(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(adObject); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		_ = json.NewEncoder(w).Encode(adObject)
+
 	case VerifyMock(adPlacementID) < 10: // Reject
 		w.WriteHeader(http.StatusNoContent)
 	}

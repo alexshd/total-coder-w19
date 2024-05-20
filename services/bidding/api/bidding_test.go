@@ -8,20 +8,22 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/matryer/is"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestBiddingService(t *testing.T) {
 	Convey("Scenario - Bidding Sever receives HTTP request", t, func() {
+		is := is.New(t)
 		Convey("Given request handler", func() {
+			is.Equal(1, 1)
 			Convey("Then service receives request", func() {
-				Convey("When request contains AdPlacmentID", func() {
+				Convey("When request contains AdPlacementID", func() {
 					w := httptest.NewRecorder()
 					query := url.Values{"ad_placement_id": {"1234-1234-1234-1234"}}
 					req := httptest.NewRequest(http.MethodGet, "/bid?"+query.Encode(), nil)
-
 					BidService(w, req)
-					Convey("Then service should respond with JSON, AdOpbject", func() {
+					Convey("Then service should respond with JSON, AdObject", func() {
 						adObject := new(AdObject)
 						resp := w.Result()
 						So(resp.Header.Get("Content-Type"), ShouldEqual, "application/json")
@@ -52,7 +54,6 @@ func TestBiddingService(t *testing.T) {
 
 					query := url.Values{"ad_placement_id": {"1234-1234"}}
 					req := httptest.NewRequest(http.MethodGet, "/bid?"+query.Encode(), nil)
-
 					BidService(w, req)
 
 					Convey("Then return StatusNoContent (204)", func() {

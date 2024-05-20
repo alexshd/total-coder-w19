@@ -23,7 +23,7 @@ func TestAuctionDSPHappyPath(t *testing.T) {
 					So(w.Result().StatusCode, ShouldEqual, http.StatusOK)
 				})
 
-				Convey("responce body should contain JSON", func() {
+				Convey("response body should contain JSON", func() {
 					So(w.Result().Header.Get("content-type"), ShouldEqual, "application/json")
 				})
 
@@ -37,7 +37,7 @@ func TestAuctionDSPHappyPath(t *testing.T) {
 				})
 
 				Convey("And it should be in a struct", func() {
-					r := &APIResponce{}
+					r := &APIResponse{}
 					Then(assert.NoError(t, json.NewDecoder(w.Body).Decode(r)))
 					Convey("And the struct should have", func() {
 						So(r.AdLink, ShouldNotBeEmpty)
@@ -59,12 +59,12 @@ func TestAuctionServiceClientExposedAPI(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/bid?"+query.Encode(), nil)
 			AuctionHandler(w, req)
 
-			Convey("When handeling the client request", func() {
+			Convey("When handling the client request", func() {
 				res := w.Result()
-				decod := new(AuctionResponce)
+				decod := new(AuctionResponse)
 
 				So(json.NewDecoder(w.Body).Decode(&decod), ShouldBeNil)
-				Convey("Then the responce is JSON", func() {
+				Convey("Then the response is JSON", func() {
 					So(res.Header.Get("content-type"), ShouldEqual, "application/json")
 					So(decod.Status, ShouldEqual, "THE-COOLEST-ID-ETHER")
 				})
@@ -76,30 +76,7 @@ func TestAuctionServiceClientExposedAPI(t *testing.T) {
 			Convey("When contains AdPlacementID", func() {
 				Convey("Then \"FanOut\" ( optimize ) client request", func() {
 					Convey("When On Success", func() {
-						// a :=assert.New(t)
-						// output := make(chan any, 4)
-						// list := Acum{}
-						Convey("When running the function", func() {
-							// input := "/bid?ad_placement_id=THE-COOLEST-ID-ETHER-" + "1"
-							// srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							// 	fmt.Fprintln(w, "hello, client")
-							// }))
-							// defer srv.Close()
-							//
-							// MakeBiddRequest(input, output)
-							// select {
-							// case result := <-output:
-							// 	list.Lock()
-							// 	list.list = append(list.list, result)
-							// 	list.Unlock()
-							// case <-time.After(1 * time.Second):
-							// 	a.Fail("Test timed out")
-							// }
-							// Convey("5 items in list", func() {
-							// 	So(len(list.list), ShouldEqual, 0)
-							// })
-							So(1, ShouldEqual, 1)
-						})
+						So(1, ShouldEqual, 1)
 					})
 				})
 			})

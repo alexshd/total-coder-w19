@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"sync"
 )
 
-type APIResponce struct {
+type APIResponse struct {
 	AdPlacementID string `json:"ad_placement_id"`
 	AdLink        string `json:"ad_link"`
 	Price         int    `json:"price"`
 }
 
 func AuctionClientAPI(w http.ResponseWriter, r *http.Request) {
-	responce := &APIResponce{
+	response := &APIResponse{
 		AdPlacementID: r.URL.Query().Get("ad_placement_id"),
 		Price:         1234,
 		AdLink:        "http://some.link.to.the.ad",
@@ -22,10 +21,10 @@ func AuctionClientAPI(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("content-type", "application/json")
 
-	_ = json.NewEncoder(w).Encode(responce)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
-type AuctionResponce struct {
+type AuctionResponse struct {
 	Status string `json:"status"`
 }
 
@@ -33,16 +32,11 @@ func AuctionHandler(w http.ResponseWriter, r *http.Request) {
 	adPlacementID := r.URL.Query().Get("ad_placement_id")
 	w.Header().Set("Content-Type", "application/json")
 
-	auctionRes := &AuctionResponce{
+	auctionRes := &AuctionResponse{
 		Status: adPlacementID,
 	}
 
 	_ = json.NewEncoder(w).Encode(auctionRes)
-}
-
-type Acum struct {
-	list []any
-	sync.RWMutex
 }
 
 func PlayerServer(w http.ResponseWriter, r *http.Request) {
