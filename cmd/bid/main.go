@@ -32,7 +32,7 @@ func Pooling() {
 	}
 
 	const work = 100
-	for w := 0; w < work; w++ {
+	for w := range work {
 		ch <- "data"
 		slog.Info("parent", "sent signal", w)
 	}

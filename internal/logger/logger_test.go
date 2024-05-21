@@ -1,16 +1,41 @@
 package logger
 
 import (
+	"fmt"
+	"os"
+	"reflect"
 	"testing"
 
 	"github.com/charmbracelet/log"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestLogger(t *testing.T) {
-	a := assert.New(t)
+	t.Parallel()
 
-	handler := NewLogHandler("Test")
+	t.Run("NewLogHandler is of type log.Logger", func(t *testing.T) {
+		got := reflect.TypeOf(NewLogHandler("Test"))
+		want := reflect.TypeOf(new(log.Logger))
 
-	a.IsType(new(log.Logger), handler)
+		if got != want {
+			t.Fatalf("Expected: %T , Got: %T", want, got)
+		}
+	})
+}
+
+func TestA(t *testing.T) {
+	t.Log("Test A run")
+}
+
+func TestB(t *testing.T) {
+	t.Log("Test B run")
+}
+
+func TestMain(m *testing.M) {
+	exitVal := m.Run()
+
+	if exitVal == 0 {
+		// teardown()
+		fmt.Println("Teardown")
+	}
+	os.Exit(exitVal)
 }

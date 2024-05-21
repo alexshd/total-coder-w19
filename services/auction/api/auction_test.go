@@ -5,82 +5,82 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
-
-	. "github.com/alexshd/total-coder-w19/internal"
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestAuctionDSPHappyPath(t *testing.T) {
-	Convey("When the client sends request", t, func() {
-		Convey("Then the request includes AdPlacementID", func() {
-			req := httptest.NewRequest(http.MethodGet, "/api?ad_placement_id=THE-COOLEST-ID-ETHER", nil)
-			w := httptest.NewRecorder()
-			Convey("Given a Handler", func() {
-				AuctionClientAPI(w, req)
-				Convey("Then StatusOK (200)", func() {
-					So(w.Result().StatusCode, ShouldEqual, http.StatusOK)
-				})
+	req := httptest.NewRequest(http.MethodGet, "/api?ad_placement_id=THE-COOLEST-ID-ETHER", nil)
+	w := httptest.NewRecorder()
+	AuctionClientAPI(w, req)
 
-				Convey("response body should contain JSON", func() {
-					So(w.Result().Header.Get("content-type"), ShouldEqual, "application/json")
-				})
+	t.Run("StatusOK & content-Type = application/json", func(t *testing.T) {
+		if w.Result().StatusCode != http.StatusOK {
+			t.Error("got: ", w.Result().StatusCode)
+		}
 
-				Convey("the body should include fields", func() {
-					field1 := `"ad_placement_id":"THE-COOLEST-ID-ETHER"`
-					field2 := `"price":`
-					field3 := `"ad_link":`
-					So(w.Body.String(), ShouldContainSubstring, field1)
-					So(w.Body.String(), ShouldContainSubstring, field2)
-					So(w.Body.String(), ShouldContainSubstring, field3)
-				})
+		if w.Result().Header.Get("content-type") != "application/json" {
+			t.Error("Content Type is not as expected")
+		}
+	})
 
-				Convey("And it should be in a struct", func() {
-					r := &APIResponse{}
-					Then(assert.NoError(t, json.NewDecoder(w.Body).Decode(r)))
-					Convey("And the struct should have", func() {
-						So(r.AdLink, ShouldNotBeEmpty)
-						So(r.Price, ShouldBeBetween, 10, 3000)
-						So(r.AdPlacementID, ShouldEqual, "THE-COOLEST-ID-ETHER")
-					})
-				})
-			})
-		})
+	t.Run("Body should contain", func(t *testing.T) {
+		field1 := `"ad_placement_id":"THE-COOLEST-ID-ETHER"`
+		field2 := `"price":`
+		field3 := `"ad_link":`
+		body := w.Body.String()
+
+		if !strings.Contains(body, field1) && !strings.Contains(body, field2) && !strings.Contains(body, field3) {
+			t.Error("Body does not contain expected content", body)
+		}
+	})
+
+	t.Run("Unmarshaled body should contain fields", func(t *testing.T) {
+		r := &APIResponse{}
+
+		if err := json.NewDecoder(w.Body).Decode(r); err != nil {
+			t.Fatalf("Failed to decode body %v", err)
+		}
+
+		if r.AdLink == "" {
+			t.Error("AdLink should not be empty")
+		}
+
+		if r.Price < 10 || r.Price > 3000 {
+			t.Error("Price out of range")
+		}
+
+		if r.AdPlacementID != "THE-COOLEST-ID-ETHER" {
+			t.Error("AdPlacementID not as expected:\n\t", "`r.AdPlacementID` != THE-COOLEST-ID-ETHER")
+		}
 	})
 }
 
-func TestAuctionServiceClientExposedAPI(t *testing.T) {
-	t.Helper()
-	Convey("Given publicly exposed API", t, func() {
-		w := httptest.NewRecorder()
-		Convey("Featureing client facing API for single request", func() {
-			query := url.Values{"ad_placement_id": {"THE-COOLEST-ID-ETHER"}}
-			req := httptest.NewRequest(http.MethodGet, "/bid?"+query.Encode(), nil)
-			AuctionHandler(w, req)
+func TestAuctionServiceClientSingleRequest(t *testing.T) {
+	w := httptest.NewRecorder()
+	query := url.Values{"ad_placement_id": {"THE-COOLEST-ID-ETHER"}}
+	req := httptest.NewRequest(http.MethodGet, "/bid?"+query.Encode(), nil)
+	AuctionHandler(w, req)
 
-			Convey("When handling the client request", func() {
-				res := w.Result()
-				decod := new(AuctionResponse)
+	decod := new(AuctionResponse)
 
-				So(json.NewDecoder(w.Body).Decode(&decod), ShouldBeNil)
-				Convey("Then the response is JSON", func() {
-					So(res.Header.Get("content-type"), ShouldEqual, "application/json")
-					So(decod.Status, ShouldEqual, "THE-COOLEST-ID-ETHER")
-				})
-			})
-		})
-		Reset(func() { w.Result().Body.Close() })
+	t.Run("The response should be JSON", func(t *testing.T) {
+		err := json.NewDecoder(w.Body).Decode(&decod)
+		res := w.Result()
+		contentType := res.Header.Get("content-type")
+		if err != nil {
+			t.Errorf("no error was expected... but: %v", err)
+		}
 
-		Convey("On external client request", func() {
-			Convey("When contains AdPlacementID", func() {
-				Convey("Then \"FanOut\" ( optimize ) client request", func() {
-					Convey("When On Success", func() {
-						So(1, ShouldEqual, 1)
-					})
-				})
-			})
-		})
+		if contentType != "application/json" {
+			t.Errorf("Expecting `application/json`... got: %s", contentType)
+		}
+	})
+	t.Run("Body should include `THE-COOLEST-ID-ETHER`", func(t *testing.T) {
+		decodeStatus := decod.Status
+		if decodeStatus != "THE-COOLEST-ID-ETHER" {
+			t.Error("got: ", decodeStatus, " wanted: THE-COOLEST-ID-ETHER")
+		}
 	})
 }
 

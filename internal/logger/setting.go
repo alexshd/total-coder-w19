@@ -8,7 +8,7 @@ import (
 )
 
 func NewLogHandler(prefix string) *log.Logger {
-	return log.NewWithOptions(os.Stderr, log.Options{
+	return log.NewWithOptions(os.Stdout, log.Options{
 		TimeFormat:      time.Kitchen,
 		Level:           0,
 		Prefix:          prefix,
